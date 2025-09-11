@@ -62,14 +62,39 @@ def deploy_to_netlify():
 
     site_creation_response = requests.post(url, data={'name': site_name}, headers=headers)
 
-    if site_creation_response.status_code == 201:
-        file = request.files.get('file')
-        headers['Content-Type'] = 'application/zip'
-        deployment_response = requests.post(url, data=file.read(), headers=headers)
+    if site_creation_response.status_code != 201:
+        return (
+            jsonify(
+                {
+                    'message': f'Failed to create site: {site_creation_response.status_code}',
+                    'response': site_creation_response.json(),
+                }
+            ),
+            422,
+        )
+    file = request.files.get('file')
+    headers['Content-Type'] = 'application/zip'
+    deployment_response = requests.post(url, data=file.read(), headers=headers)
 
-        if deployment_response.status_code == 201: # created
-            return jsonify({'message': 'Deploy OK' , 'url': deployment_response.json()['url'],'response': deployment_response.json()}), 200
-        else:
-            return jsonify({'message': 'Failed to deploy: ' + str(deployment_response.status_code), 'response': deployment_response.json()}), 400
-    else:
-        return jsonify({'message': 'Failed to create site: ' + str(site_creation_response.status_code), 'response': site_creation_response.json()}), 422
+    return (
+        (
+            jsonify(
+                {
+                    'message': 'Deploy OK',
+                    'url': deployment_response.json()['url'],
+                    'response': deployment_response.json(),
+                }
+            ),
+            200,
+        )
+        if deployment_response.status_code == 201
+        else (
+            jsonify(
+                {
+                    'message': f'Failed to deploy: {deployment_response.status_code}',
+                    'response': deployment_response.json(),
+                }
+            ),
+            400,
+        )
+    )

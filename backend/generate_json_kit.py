@@ -27,7 +27,7 @@ def process_templates(root_directory):
 
                             if key.capitalize() not in file_keys:
                                 file_keys[key.capitalize()] = {}
-                            
+
                             base64_data = convert_html_to_base64(html_file_path)
                             file_keys[key.capitalize()][value] = base64_data
 
@@ -35,7 +35,16 @@ def process_templates(root_directory):
                 parent_folder_name = os.path.basename(os.path.dirname(components_dir))
 
                 # Define the order of keys
-                ordered_keys = ["Grids", "Navigation", "Common"] + [k for k in file_keys.keys() if k not in ["Grids", "Navigation", "Common", "Footers"]] + ["Footers"]
+                ordered_keys = (
+                    ["Grids", "Navigation", "Common"]
+                    + [
+                        k
+                        for k in file_keys
+                        if k
+                        not in ["Grids", "Navigation", "Common", "Footers"]
+                    ]
+                    + ["Footers"]
+                )
 
                 # Create a new dictionary with ordered keys
                 ordered_file_keys = {k: file_keys[k] for k in ordered_keys if k in file_keys}
